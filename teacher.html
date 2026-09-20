@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EngageAI - Teacher Live Dashboard</title>
+<style>
+ body{background:#000;color:#00ff88;font-family:Arial;padding:20px;margin:0}
+ h1{color:#00ff88;text-align:center;text-shadow:0 0 10px #00ff88}
+ #stats{text-align:center;margin:20px;font-size:20px}
+.student-card{background:#111;border:1px solid #00ff88;border-radius:12px;padding:15px;margin:10px;display:inline-block;min-width:200px;box-shadow:0 0 15px rgba(0,255,136,0.3)}
+.high{color:#00ff88}.medium{color:#ffcc00}.low{color:#ff4444}
+</style>
+</head>
+<body>
+<h1>🎓 EngageAI - Live Class Dashboard</h1>
+<div id="stats">Total Students: <span id="count">0</span> | Waiting...</div>
+<div id="list" style="text-align:center"></div>
+
+<script>
+const DB_URL = "https://engageai-a5bdc-default-rtdb.asia-southeast1.firebasedatabase.app/class.json";
+
+async function loadData(){
+  try{
+    let res = await fetch(DB_URL);
+    let data = await res.json();
+    let listDiv = document.getElementById("list");
+    let count = document.getElementById("count");
+
+    if(!data){
+      listDiv.innerHTML = "<p style='color:#888'>Waiting for students to join...<br>Ask students to open student link and enter name</p>";
+      count.innerText = "0";
+      return;
+    }
+
+    let html = "";
+    let total = 0;
+    for(let key in data){
+      total++;
+      let s = data[key];
+      let eng = parseInt(s.engagement) || 0;
+      let colorClass = eng > 70? "high" : eng > 40? "medium" : "low";
+      html += `
+        <div class="student-card">
+          <h3>👤 ${s.name}</h3>
+          <p class="${colorClass}">Engagement: ${s.engagement}</p>
+          <p>Status: ${s.status}</p>
+        </div>
+      `;
+    }
+    listDiv.innerHTML = html;
+    count.innerText = total;
+  }catch(e){ console.log(e); }
+}
+setInterval(loadData, 2000);
+loadData();
+</script>
+</body>
+</html>
